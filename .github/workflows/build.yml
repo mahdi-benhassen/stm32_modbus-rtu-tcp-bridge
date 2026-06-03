@@ -53,17 +53,22 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Install cppcheck
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq cppcheck
+
       - name: Run cppcheck static analysis
-        uses: deep5050/cppcheck-action@v1
-        with:
-          enable: all
-          inconclusive: enable
-          suppress: missingIncludeSystem,unusedFunction
-          std: c11
-          platform: unix32
-          source: Core/Src
-          include: Core/Inc
-          output: cppcheck_report.xml
+        run: |
+          cppcheck \
+            --enable=all \
+            --inconclusive \
+            --suppress=missingIncludeSystem \
+            --suppress=unusedFunction \
+            --std=c11 \
+            --platform=unix32 \
+            -I Core/Inc \
+            --xml \
+            --xml-version=2 \
+            Core/Src 2> cppcheck_report.xml || true
 
       - name: Upload cppcheck report
         if: always()

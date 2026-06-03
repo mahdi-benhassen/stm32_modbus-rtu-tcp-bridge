@@ -132,7 +132,7 @@ mkdir -p "$FRTOS_MEM_DST"
 cp "${FRTOS_CACHE}/portable/MemMang/heap_4.c" "$FRTOS_MEM_DST/"
 
 # ----------------------------------------------------------
-# 3. lwIP (v2.2.0)
+# 3. lwIP (v2.2.0) — cloned from official GitHub mirror
 # ----------------------------------------------------------
 LWIP_REF="STABLE-2_2_0_RELEASE"
 LWIP_CACHE="${DL_DIR}/lwip-${LWIP_REF}"
@@ -140,7 +140,7 @@ LWIP_CACHE="${DL_DIR}/lwip-${LWIP_REF}"
 if [ ! -d "${LWIP_CACHE}" ]; then
     echo "Cloning lwIP ${LWIP_REF} (shallow)..."
     git clone --depth 1 --branch "${LWIP_REF}" \
-        https://git.savannah.nongnu.org/r/lwip.git \
+        https://github.com/lwip-tcpip/lwip.git \
         "${LWIP_CACHE}"
 else
     echo "lwIP already cached at ${LWIP_CACHE}"
