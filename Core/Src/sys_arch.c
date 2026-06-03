@@ -258,16 +258,18 @@ void sys_mutex_set_invalid(sys_mutex_t *mutex)
     *mutex = NULL;
 }
 
-/* ---- Init ---- */
+/* ---- Critical Section Protection ---- */
 
 sys_prot_t sys_arch_protect(void)
 {
-    return (sys_prot_t)taskENTER_CRITICAL_FROM_ISR();
+    portDISABLE_INTERRUPTS();
+    return 0;
 }
 
 void sys_arch_unprotect(sys_prot_t pval)
 {
-    taskEXIT_CRITICAL_FROM_ISR((UBaseType_t)pval);
+    (void)pval;
+    portENABLE_INTERRUPTS();
 }
 
 /* ---- Init ---- */
