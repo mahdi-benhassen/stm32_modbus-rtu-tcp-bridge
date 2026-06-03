@@ -117,6 +117,17 @@ if [ ! -f "${CMSIS_DEV_DST}/stm32f407xx.h" ]; then
     ls -la "${CMSIS_DEV_CACHE}/" 2>/dev/null || echo "(empty)"
     exit 1
 fi
+
+# Patch stm32f4xx.h: remove `#include "stm32f4xx_hal.h"` which creates a
+# circular dependency (hal_def.h -> stm32f4xx.h -> hal.h -> needs types
+# from hal_def.h before hal_def.h finishes defining them).
+# The user code includes hal.h explicitly; the CMSIS header should not.
+if [ -f "${CMSIS_DEV_DST}/stm32f4xx.h" ]; then
+    sed -i 's|#include "stm32f4xx_hal.h"|/* patched: #include "stm32f4xx_hal.h" */|' \
+        "${CMSIS_DEV_DST}/stm32f4xx.h"
+    echo "  Patched stm32f4xx.h: removed auto-include of stm32f4xx_hal.h"
+fi
+
 echo "  CMSIS Device: OK"
 
 # ----------------------------------------------------------
