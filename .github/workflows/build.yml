@@ -22,6 +22,13 @@ jobs:
         with:
           release: '13.3.Rel1'
 
+      - name: Restore dependency cache
+        id: deps-cache
+        uses: actions/cache@v4
+        with:
+          path: .deps_cache
+          key: deps-${{ runner.os }}-${{ hashFiles('scripts/fetch_deps.sh') }}
+
       - name: Fetch STM32CubeF4 / FreeRTOS / lwIP dependencies
         run: bash scripts/fetch_deps.sh
 
