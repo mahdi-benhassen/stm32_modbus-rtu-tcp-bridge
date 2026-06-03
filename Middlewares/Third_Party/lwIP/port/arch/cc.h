@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <errno.h>
+#include <sys/errno.h>
 
 /* lwIP basic types */
 typedef uint8_t   u8_t;
