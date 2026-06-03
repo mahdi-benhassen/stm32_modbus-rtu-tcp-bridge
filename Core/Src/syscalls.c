@@ -1,5 +1,6 @@
 #include <sys/stat.h>
 #include <sys/times.h>
+#include <sys/errno.h>
 #include <errno.h>
 #include <stdint.h>
 
@@ -15,15 +16,11 @@
  *  or dummy values appropriate for a bare-metal/FreeRTOS system.
  * ============================================================ */
 
-#undef errno
-extern int errno;
-
 /* ---- Memory Management ---- */
 
 caddr_t _sbrk(int incr)
 {
-    extern char end  __asm__("end");
-    extern char _end __asm__("_end");
+    extern char end __asm__("end");
     static char *heap_end;
     char *prev_heap_end;
 
@@ -83,15 +80,7 @@ int _read(int file, char *ptr, int len)
 int _write(int file, char *ptr, int len)
 {
     (void)file;
-    /*
-     * Minimal: output to ITM/SWO or UART if configured.
-     * For now, just return the length (no real output).
-     * To enable ITM printf, uncomment the loop below:
-     *
-     * for (int i = 0; i < len; i++) {
-     *     ITM_SendChar(*ptr++);
-     * }
-     */
+    (void)ptr;
     return len;
 }
 
