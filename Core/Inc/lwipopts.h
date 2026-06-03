@@ -9,12 +9,12 @@
 #define LWIP_AUTOIP                     0
 #define LWIP_IGMP                       0
 #define LWIP_DNS                        0
-#define LWIP_UDP                        0
+#define LWIP_UDP                        1
 
 #define MEM_ALIGNMENT                   4
 #define MEM_SIZE                        (16 * 1024)
 #define MEMP_NUM_PBUF                   8
-#define MEMP_NUM_UDP_PCB                0
+#define MEMP_NUM_UDP_PCB                4
 #define MEMP_NUM_TCP_PCB                8
 #define MEMP_NUM_TCP_PCB_LISTEN         2
 #define MEMP_NUM_TCP_SEG                16
@@ -22,7 +22,7 @@
 #define MEMP_NUM_NETCONN                8
 #define MEMP_NUM_SYS_TIMEOUT            12
 
-#define PBUF_POOL_SIZE                  8
+#define PBUF_POOL_SIZE                  16
 #define PBUF_POOL_BUFSIZE               256
 
 #define LWIP_TCP                        1
