@@ -65,6 +65,10 @@
 
 #define USE_SPI_CRC                     0U
 
+/* PHY access timeouts (milliseconds) — required by HAL ETH driver */
+#define PHY_READ_TO                     ((uint32_t)2000U)
+#define PHY_WRITE_TO                    ((uint32_t)2000U)
+
 /*
  * Conditionally pull in module headers that the thin stm32f4xx_hal.h
  * no longer auto-includes.  HAL source files (hal.c, hal_rcc.c, etc.)
