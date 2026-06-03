@@ -91,12 +91,9 @@ void SystemCoreClockUpdate(void)
 
 /*
  * HAL tick — shared between HAL_Delay and FreeRTOS task tick.
- * uwTick is incremented by SysTick_Handler in stm32f4xx_it.c
- * (which also calls xPortSysTickHandler for FreeRTOS).
+ * uwTick/uwTickFreq are defined in stm32f4xx_hal.c.
+ * We provide strong overrides for the __weak HAL_IncTick/GetTick/Delay.
  */
-__IO uint32_t                uwTick = 0;
-HAL_TickFreqTypeDef          uwTickFreq = HAL_TICK_FREQ_DEFAULT;
-
 void HAL_IncTick(void)
 {
     uwTick += (uint32_t)uwTickFreq;

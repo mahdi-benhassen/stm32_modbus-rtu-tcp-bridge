@@ -38,6 +38,7 @@
 #define PPP_SUPPORT                     0
 
 #define CHECKSUM_BY_HARDWARE            0
+#define LWIP_ACD                        0
 
 #define LWIP_STATS                      0
 #define LWIP_STATS_DISPLAY              0

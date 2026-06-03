@@ -28,7 +28,7 @@ SemaphoreHandle_t rx_frame_semaphore  = NULL;
 SemaphoreHandle_t tx_done_semaphore   = NULL;
 
 /* ---- System Clock Speed ---- */
-uint32_t SystemCoreClock = 168000000;
+extern uint32_t SystemCoreClock;
 
 /* ---- lwIP Network Interface ---- */
 extern struct netif gnetif;
@@ -214,6 +214,20 @@ int main(void)
     /* Should never reach here */
     Error_Handler();
     return 0;
+}
+
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
+{
+    (void)xTask;
+    (void)pcTaskName;
+    __disable_irq();
+    while (1) {}
+}
+
+void vApplicationMallocFailedHook(void)
+{
+    __disable_irq();
+    while (1) {}
 }
 
 #ifdef USE_FULL_ASSERT

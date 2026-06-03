@@ -219,7 +219,46 @@ sys_thread_t sys_thread_new(const char *name, lwip_thread_fn thread,
     return (sys_thread_t)task_handle;
 }
 
-/* ---- Critical Section Protection ---- */
+/* ---- Mutex (lwIP internal locking, task context only) ---- */
+
+err_t sys_mutex_new(sys_mutex_t *mutex)
+{
+    *mutex = xSemaphoreCreateMutex();
+    if (*mutex == NULL) {
+        return ERR_MEM;
+    }
+    return ERR_OK;
+}
+
+void sys_mutex_lock(sys_mutex_t *mutex)
+{
+    while (xSemaphoreTake(*mutex, portMAX_DELAY) != pdTRUE) {}
+}
+
+void sys_mutex_unlock(sys_mutex_t *mutex)
+{
+    xSemaphoreGive(*mutex);
+}
+
+void sys_mutex_free(sys_mutex_t *mutex)
+{
+    if (mutex != NULL && *mutex != NULL) {
+        vSemaphoreDelete(*mutex);
+        *mutex = NULL;
+    }
+}
+
+int sys_mutex_valid(sys_mutex_t *mutex)
+{
+    return (mutex != NULL && *mutex != NULL);
+}
+
+void sys_mutex_set_invalid(sys_mutex_t *mutex)
+{
+    *mutex = NULL;
+}
+
+/* ---- Init ---- */
 
 sys_prot_t sys_arch_protect(void)
 {
