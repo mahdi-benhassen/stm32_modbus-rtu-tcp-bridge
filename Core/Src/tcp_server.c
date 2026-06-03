@@ -3,6 +3,7 @@
 #include "main.h"
 #include "lwip/sockets.h"
 #include "lwip/netdb.h"
+#include <stdbool.h>
 #include <string.h>
 
 /*
@@ -194,14 +195,6 @@ void tcp_server_task(void *pvParameters)
 
         /* Clean up sockets that may have been closed by bridge side */
         for (uint8_t i = 0; i < MAX_TCP_CLIENTS; i++) {
-            if (client_sockets[i] < 0) continue;
-            struct tcp_pcb *pcb = NULL;
-            /* Quick check: try a non-blocking recv with MSG_PEEK */
-            int test = lwip_recv(client_sockets[i], NULL, 0,
-                                MSG_DONTWAIT | MSG_PEEK);
-            /* Some lwIP ports don't support this; skip if uncertain */
-            (void)test;
-        }
 
         taskYIELD();
     }
