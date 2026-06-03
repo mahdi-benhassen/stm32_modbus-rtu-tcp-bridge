@@ -98,7 +98,7 @@ void SystemCoreClockUpdate(void)
  * uwTick is incremented by SysTick_Handler in stm32f4xx_it.c
  * (which also calls xPortSysTickHandler for FreeRTOS).
  */
-uint32_t                     uwTick = 0;
+__IO uint32_t                uwTick = 0;
 HAL_TickFreqTypeDef          uwTickFreq = HAL_TICK_FREQ_DEFAULT;
 
 void HAL_IncTick(void)
