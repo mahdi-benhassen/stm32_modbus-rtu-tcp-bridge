@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "FreeRTOS.h"
+#include "semphr.h"
 #include "app_config.h"
 
 void rs485_init(void);
