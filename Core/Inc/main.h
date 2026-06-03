@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include "stm32f4xx.h"
 #include "stm32f4xx_hal.h"
 #include "app_config.h"
 

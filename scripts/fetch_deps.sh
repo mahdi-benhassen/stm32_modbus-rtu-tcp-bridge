@@ -188,7 +188,7 @@ LWIP_URL="https://github.com/lwip-tcpip/lwip/archive/refs/tags/${LWIP_VER}.tar.g
 download_tarball "lwIP" "${LWIP_URL}" "${LWIP_CACHE}" 1
 
 LWIP_DST="${ROOT_DIR}/Middlewares/Third_Party/lwIP/src"
-mkdir -p "${LWIP_DST}/include/lwip/prot" "${LWIP_DST}/include/netif"
+mkdir -p "${LWIP_DST}/include/lwip/prot" "${LWIP_DST}/include/lwip/priv" "${LWIP_DST}/include/netif"
 mkdir -p "${LWIP_DST}/core/ipv4" "${LWIP_DST}/api" "${LWIP_DST}/netif"
 cp "${LWIP_CACHE}/src/core/"*.c         "${LWIP_DST}/core/"      2>/dev/null || true
 cp "${LWIP_CACHE}/src/core/ipv4/"*.c    "${LWIP_DST}/core/ipv4/"  2>/dev/null || true
@@ -196,6 +196,7 @@ cp "${LWIP_CACHE}/src/api/"*.c          "${LWIP_DST}/api/"        2>/dev/null ||
 cp "${LWIP_CACHE}/src/netif/ethernet.c"  "${LWIP_DST}/netif/"      2>/dev/null || true
 cp "${LWIP_CACHE}/src/include/lwip/"*.h             "${LWIP_DST}/include/lwip/"      2>/dev/null || true
 cp "${LWIP_CACHE}/src/include/lwip/prot/"*.h        "${LWIP_DST}/include/lwip/prot/"  2>/dev/null || true
+cp "${LWIP_CACHE}/src/include/lwip/priv/"*.h        "${LWIP_DST}/include/lwip/priv/"  2>/dev/null || true
 cp "${LWIP_CACHE}/src/include/netif/"*.h            "${LWIP_DST}/include/netif/"      2>/dev/null || true
 cp "${LWIP_CACHE}/src/include/"*.h                  "${LWIP_DST}/include/"            2>/dev/null || true
 echo "  lwIP: OK"
