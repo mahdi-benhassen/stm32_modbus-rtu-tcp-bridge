@@ -1,134 +1,109 @@
-#include "stm32f4xx_hal.h"
+#include "main.h"
 
 /*
  * ============================================================
- *  System Initialization and Core Clock Configuration
+ *  System Initialization and Core Clock Update
  *
  *  STM32F407VGT6 - 168 MHz
- *  HSE: 8 MHz -> PLL (M=8, N=336, P=2, Q=7)
- *  AHB: 168 MHz, APB1: 42 MHz, APB2: 84 MHz
+ *
+ *  SystemInit() is called from startup assembly before main().
+ *  Configures FPU, caches, sets vector table, and starts HSI
+ *  as a safe default clock until main() calls SystemClock_Config().
+ *
+ *  HAL tick variables are shared with FreeRTOS via SysTick_Handler
+ *  in stm32f4xx_it.c (calls both HAL_IncTick and xPortSysTickHandler).
  * ============================================================ */
 
 uint32_t SystemCoreClock = 168000000;
+
+#ifndef HS_VALUE
+#define HSI_VALUE 16000000U
+#endif
 
 const uint8_t AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0,
                                     1, 2, 3, 4, 6, 7, 8, 9};
 const uint8_t APBPrescTable[8]  = {0, 0, 0, 0, 1, 2, 3, 4};
 
-/*
- * SystemInit() is called from startup assembly before main().
- * It sets up the vector table offset, enables FPU, and configures
- * the initial clock source to HSI. The full PLL configuration
- * to 168 MHz is done in SystemClock_Config() called from main().
- */
 void SystemInit(void)
 {
-    /* FPU settings - enable CP10/CP11 full access */
-    #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
-    SCB->CPACR |= ((3UL << 10 * 2) | (3UL << 11 * 2));
-    #endif
+#if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
+    SCB->CPACR |= ((3UL << (10 * 2)) | (3UL << (11 * 2)));
+#endif
 
-    /* Configure Flash prefetch, instruction & data cache */
-    #if (PREFETCH_ENABLE != 0)
+#if (PREFETCH_ENABLE != 0)
     __HAL_FLASH_PREFETCH_BUFFER_ENABLE();
-    #endif
-
-    #if (INSTRUCTION_CACHE_ENABLE != 0)
+#endif
+#if (INSTRUCTION_CACHE_ENABLE != 0)
     __HAL_FLASH_INSTRUCTION_CACHE_ENABLE();
-    #endif
-
-    #if (DATA_CACHE_ENABLE != 0)
+#endif
+#if (DATA_CACHE_ENABLE != 0)
     __HAL_FLASH_DATA_CACHE_ENABLE();
-    #endif
+#endif
 
-    /* Set interrupt vector table offset to start of flash */
     SCB->VTOR = FLASH_BASE;
 
-    /* Configure HSI as default system clock during init phase */
-    RCC->CR |= (uint32_t)0x00000001; /* HSI ON */
-
-    /* Wait for HSI ready */
+    /* Start HSI as safe boot clock */
+    RCC->CR |= RCC_CR_HSION;
     while ((RCC->CR & RCC_CR_HSIRDY) == 0) {}
 
-    /* Select HSI as system clock source */
-    RCC->CFGR &= (uint32_t)((uint32_t)~(RCC_CFGR_SW));
-    RCC->CFGR |= (uint32_t)RCC_CFGR_SW_HSI;
+    RCC->CFGR &= ~RCC_CFGR_SW;
+    RCC->CFGR |= RCC_CFGR_SW_HSI;
+    while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_HSI) {}
 
-    /* Wait for HSI used as system clock source */
-    while ((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != RCC_CFGR_SWS_HSI) {}
+    /* Reset RCC configuration registers */
+    RCC->CR   &= ~(RCC_CR_HSEON | RCC_CR_CSSON | RCC_CR_PLLON);
+    RCC->CFGR  = 0x00000000U;
+    RCC->PLLCFGR = 0x24003010U;
+    RCC->CR   &= ~RCC_CR_HSEBYP;
+    RCC->CIR   = 0x00000000U;
 
-    /* Reset RCC configuration */
-    RCC->CR &= (uint32_t)0x00000001; /* Only HSI kept */
-    RCC->CFGR = 0x00000000;
-    RCC->CR &= (uint32_t)0xFEF6FFFF; /* Reset HSEON, CSSON, PLLON */
-    RCC->PLLCFGR = 0x24003010;
-    RCC->CR &= (uint32_t)0xFFFBFFFF; /* Reset HSEBYP */
-    RCC->CIR = 0x00000000;
-
-    /* Disable all interrupts */
     __set_PRIMASK(1);
-
-    /* Configure the Vector Table location add offset */
     SCB->VTOR = FLASH_BASE;
 }
 
-/*
- * Update SystemCoreClock variable based on current clock configuration.
- */
 void SystemCoreClockUpdate(void)
 {
-    uint32_t tmp = 0, pllvco = 0, pllp = 2, pllsource = 0, pllm = 2;
+    uint32_t tmp = 0, pllvco = 0, pllm = 2;
 
-    /* Get SYSCLK source */
     tmp = RCC->CFGR & RCC_CFGR_SWS;
-
     switch (tmp) {
-    case 0x00: /* HSI */
-        SystemCoreClock = 16000000;
+    case RCC_CFGR_SWS_HSI:
+        SystemCoreClock = HSI_VALUE;
         break;
-    case 0x04: /* HSE */
+    case RCC_CFGR_SWS_HSE:
         SystemCoreClock = HSE_VALUE;
         break;
-    case 0x08: /* PLL */
-        pllsource = (RCC->PLLCFGR & RCC_PLLCFGR_PLLSRC) >> 22;
-        pllm = RCC->PLLCFGR & RCC_PLLCFGR_PLLM;
-
+    case RCC_CFGR_SWS_PLL: {
+        uint32_t pllsource = (RCC->PLLCFGR & RCC_PLLCFGR_PLLSRC) >> RCC_PLLCFGR_PLLSRC_Pos;
+        pllm = (RCC->PLLCFGR & RCC_PLLCFGR_PLLM) >> RCC_PLLCFGR_PLLM_Pos;
         if (pllsource != 0) {
             pllvco = (HSE_VALUE / pllm) *
-                     ((RCC->PLLCFGR & RCC_PLLCFGR_PLLN) >> 6);
+                     ((RCC->PLLCFGR & RCC_PLLCFGR_PLLN) >> RCC_PLLCFGR_PLLN_Pos);
         } else {
-            pllvco = (16000000 / pllm) *
-                     ((RCC->PLLCFGR & RCC_PLLCFGR_PLLN) >> 6);
+            pllvco = (HSI_VALUE / pllm) *
+                     ((RCC->PLLCFGR & RCC_PLLCFGR_PLLN) >> RCC_PLLCFGR_PLLN_Pos);
         }
-
-        pllp = (((RCC->PLLCFGR & RCC_PLLCFGR_PLLP) >> 16) + 1) * 2;
+        uint32_t pllp = (((RCC->PLLCFGR & RCC_PLLCFGR_PLLP) >> RCC_PLLCFGR_PLLP_Pos) + 1U) * 2U;
         SystemCoreClock = pllvco / pllp;
         break;
+    }
     default:
-        SystemCoreClock = 16000000;
+        SystemCoreClock = HSI_VALUE;
         break;
     }
-
-    /* Compute HCLK, PCLK1, PCLK2 frequencies */
-    tmp = AHBPrescTable[((RCC->CFGR & RCC_CFGR_HPRE) >> 4)];
-    /* HCLK = SYSCLK / tmp */
-    tmp = APBPrescTable[((RCC->CFGR & RCC_CFGR_PPRE1) >> 10)];
-    /* PCLK1 = HCLK / tmp */
-    tmp = APBPrescTable[((RCC->CFGR & RCC_CFGR_PPRE2) >> 13)];
-    /* PCLK2 = HCLK / tmp */
 }
 
 /*
- * Override HAL_IncTick for FreeRTOS compatibility.
- * When FreeRTOS uses SysTick, HAL ticks come from a separate
- * timer or this function is called by the SysTick hook.
+ * HAL tick — shared between HAL_Delay and FreeRTOS task tick.
+ * uwTick is incremented by SysTick_Handler in stm32f4xx_it.c
+ * (which also calls xPortSysTickHandler for FreeRTOS).
  */
-uint32_t uwTick = 0;
-uint32_t uwTickFreq = HAL_TICK_FREQ_DEFAULT;
+uint32_t                     uwTick = 0;
+HAL_TickFreqTypeDef          uwTickFreq = HAL_TICK_FREQ_DEFAULT;
 
 void HAL_IncTick(void)
 {
-    uwTick += uwTickFreq;
+    uwTick += (uint32_t)uwTickFreq;
 }
 
 uint32_t HAL_GetTick(void)
@@ -145,35 +120,5 @@ void HAL_Delay(uint32_t Delay)
         wait += (uint32_t)uwTickFreq;
     }
 
-    while ((HAL_GetTick() - tickstart) < wait) {
-        /* yield to FreeRTOS scheduler */
-    }
-}
-
-/*
- * SysTick handler: increments HAL tick and calls FreeRTOS SysTick hook
- * if configured. FreeRTOS port's xPortSysTickHandler typically handles
- * the OS tick independently.
- */
-void HAL_SYSTICK_Callback(void)
-{
-    HAL_IncTick();
-}
-
-/*
- * Compatibility weak symbols for HAL error returns.
- * Overridden by actual implementations in main.c.
- */
-__weak void Error_Handler(void)
-{
-    __disable_irq();
-    while (1) {}
-}
-
-__weak void assert_failed(uint8_t *file, uint32_t line)
-{
-    (void)file;
-    (void)line;
-    __disable_irq();
-    while (1) {}
+    while ((HAL_GetTick() - tickstart) < wait) {}
 }
