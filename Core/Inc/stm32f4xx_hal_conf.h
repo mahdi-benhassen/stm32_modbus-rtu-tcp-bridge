@@ -1,6 +1,16 @@
 #ifndef __STM32F4XX_HAL_CONF_H
 #define __STM32F4XX_HAL_CONF_H
 
+/*
+ * HAL source files include stm32f4xx_hal.h directly (not via main.h),
+ * so the CMSIS types (uint32_t, __IO, __weak, register bases, etc.)
+ * and HAL base types (HAL_StatusTypeDef) must be available before
+ * hal.h uses them.  Pull them in here since hal.h includes this file
+ * first thing (line ~29).
+ */
+#include "stm32f4xx.h"           /* CMSIS device: registers, __IO, uint32_t */
+#include "stm32f4xx_hal_def.h"   /* HAL_StatusTypeDef, HAL_LockTypeDef, etc. */
+
 #define HAL_MODULE_ENABLED
 
 #define HAL_ADC_MODULE_ENABLED
