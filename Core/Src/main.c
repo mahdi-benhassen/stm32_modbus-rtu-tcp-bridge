@@ -84,14 +84,6 @@ static void SystemClock_Config(void)
     }
 }
 
-static void MX_ETH_Init(void)
-{
-    /* Ethernet peripheral initialization is handled by the lwIP ethernetif
-     * driver. This function is a placeholder for CubeMX compatibility.
-     * The actual MAC + PHY init is done in ethernetif.c via
-     * HAL_ETH_Init() with RMII configuration. */
-}
-
 static void MX_GPIO_Init(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};

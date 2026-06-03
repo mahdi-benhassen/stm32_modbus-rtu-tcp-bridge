@@ -5,7 +5,15 @@
 extern "C" {
 #endif
 
-#include "stm32f4xx.h"
+/*
+ * Include the raw CMSIS device header (stm32f407xx.h) instead of
+ * stm32f4xx.h.  The latter pulls in stm32f4xx_hal.h internally at
+ * line ~287, creating a circular dependency with stm32f4xx_hal_def.h
+ * (hal_def includes stm32f4xx.h, stm32f4xx.h includes hal, hal
+ * needs types from hal_def before hal_def finished defining them).
+ */
+#include "stm32f407xx.h"
+#include "stm32f4xx_hal_def.h"
 #include "stm32f4xx_hal.h"
 
 /*
