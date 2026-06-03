@@ -35,7 +35,6 @@ extern struct netif gnetif;
 
 /* ---- Function Prototypes ---- */
 static void SystemClock_Config(void);
-static void MX_ETH_Init(void);
 static void MX_GPIO_Init(void);
 static void prvSetupHardware(void);
 
