@@ -34,6 +34,7 @@
 #define HAL_USART_MODULE_ENABLED
 
 #define HSE_VALUE                       8000000UL
+#define HSI_VALUE                       16000000UL
 #define HSE_STARTUP_TIMEOUT             100U
 #define LSE_VALUE                       32768UL
 #define LSE_STARTUP_TIMEOUT             5000U
