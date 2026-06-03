@@ -193,9 +193,6 @@ void tcp_server_task(void *pvParameters)
             /* BRIDGE_ERR_CONNECTION_LOST -> client already gone, nothing to do */
         }
 
-        /* Clean up sockets that may have been closed by bridge side */
-        for (uint8_t i = 0; i < MAX_TCP_CLIENTS; i++) {
-
         taskYIELD();
     }
 
