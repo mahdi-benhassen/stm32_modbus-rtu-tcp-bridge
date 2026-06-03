@@ -1,0 +1,65 @@
+# Build outputs
+*.o
+*.d
+*.elf
+*.hex
+*.bin
+*.map
+*.out
+*.a
+*.la
+*.lo
+*.lib
+*.dylib
+*.so
+
+# Debug
+*.crf
+*.dep
+*.dmp
+*.lst
+*.lnp
+*.sct
+*.uvguix.*
+*.uvoptx
+*.uvprojx
+*.ewd
+*.ewp
+*.ewt
+*.eww
+*.launch
+*.scvd
+*.jlink
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.code-workspace
+
+# STM32CubeIDE
+Debug/
+Release/
+.settings/
+.cproject
+.project
+*.ioc
+
+# Dependency cache (CI downloads)
+.deps_cache/
+
+# OpenOCD
+*.cfg.bak
+
+# Doxygen
+doc/html/
+doc/latex/
+
+# Temporary / OS
+*.tmp
+*.bak
+*.orig
