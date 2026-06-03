@@ -29,6 +29,7 @@ MCU_FLAGS    := $(CPU) -mthumb $(FPU)
 C_DEFS       := -DUSE_HAL_DRIVER -DSTM32F407xx
 C_INCLUDES   := -I$(CORE_DIR)/Inc \
                 -I$(DRV_DIR)/CMSIS/Include \
+                -I$(DRV_DIR)/CMSIS/Device/ST/STM32F4xx/Include \
                 -I$(DRV_DIR)/STM32F4xx_HAL_Driver/Inc \
                 -I$(MID_DIR)/Third_Party/FreeRTOS/Source/include \
                 -I$(MID_DIR)/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F \

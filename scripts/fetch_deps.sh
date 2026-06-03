@@ -48,7 +48,12 @@ fi
 echo "Copying CMSIS headers..."
 CMSIS_DST="${ROOT_DIR}/Drivers/CMSIS/Include"
 mkdir -p "$CMSIS_DST"
-cp -r "${CUBE_CACHE}/Drivers/CMSIS/Include/." "$CMSIS_DST/"
+# Common CMSIS headers
+cp -r "${CUBE_CACHE}/Drivers/CMSIS/Include/." "$CMSIS_DST/" 2>/dev/null || true
+# Core CMSIS headers (core_cm4.h, cmsis_gcc.h, etc.)
+if [ -d "${CUBE_CACHE}/Drivers/CMSIS/Core/Include" ]; then
+    cp -r "${CUBE_CACHE}/Drivers/CMSIS/Core/Include/." "$CMSIS_DST/" 2>/dev/null || true
+fi
 # Copy device-specific headers
 CMSIS_DEV_DST="${ROOT_DIR}/Drivers/CMSIS/Device/ST/STM32F4xx/Include"
 mkdir -p "$CMSIS_DEV_DST"
