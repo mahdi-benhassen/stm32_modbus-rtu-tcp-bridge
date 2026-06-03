@@ -65,4 +65,41 @@
 
 #define USE_SPI_CRC                     0U
 
+/*
+ * Conditionally pull in module headers that the thin stm32f4xx_hal.h
+ * no longer auto-includes.  HAL source files (hal.c, hal_rcc.c, etc.)
+ * use macros/functions from sibling modules and need these available.
+ */
+#ifdef HAL_CORTEX_MODULE_ENABLED
+#include "stm32f4xx_hal_cortex.h"
+#endif
+#ifdef HAL_DMA_MODULE_ENABLED
+#include "stm32f4xx_hal_dma.h"
+#endif
+#ifdef HAL_ETH_MODULE_ENABLED
+#include "stm32f4xx_hal_eth.h"
+#endif
+#ifdef HAL_FLASH_MODULE_ENABLED
+#include "stm32f4xx_hal_flash.h"
+#include "stm32f4xx_hal_flash_ex.h"
+#endif
+#ifdef HAL_GPIO_MODULE_ENABLED
+#include "stm32f4xx_hal_gpio.h"
+#endif
+#ifdef HAL_PWR_MODULE_ENABLED
+#include "stm32f4xx_hal_pwr.h"
+#include "stm32f4xx_hal_pwr_ex.h"
+#endif
+#ifdef HAL_RCC_MODULE_ENABLED
+#include "stm32f4xx_hal_rcc.h"
+#include "stm32f4xx_hal_rcc_ex.h"
+#endif
+#ifdef HAL_TIM_MODULE_ENABLED
+#include "stm32f4xx_hal_tim.h"
+#include "stm32f4xx_hal_tim_ex.h"
+#endif
+#ifdef HAL_UART_MODULE_ENABLED
+#include "stm32f4xx_hal_uart.h"
+#endif
+
 #endif /* __STM32F4XX_HAL_CONF_H */
