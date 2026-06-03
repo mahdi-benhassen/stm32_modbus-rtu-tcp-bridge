@@ -15,23 +15,22 @@ extern "C" {
 #include "stm32f4xx_hal.h"
 
 /*
- * The standalone stm32f4xx_hal_driver repo ships a thin stm32f4xx_hal.h
- * that does NOT auto-include module headers.  Pull in every module we use.
+ * Module headers - order matters: DMA_HandleTypeDef must be visible
+ * before UART_HandleTypeDef (which contains DMA pointers).
  */
-#include "stm32f4xx_hal_def.h"
+#include "stm32f4xx_hal_dma.h"
 #include "stm32f4xx_hal_rcc.h"
 #include "stm32f4xx_hal_rcc_ex.h"
 #include "stm32f4xx_hal_gpio.h"
 #include "stm32f4xx_hal_uart.h"
-#include "stm32f4xx_hal_dma.h"
 #include "stm32f4xx_hal_tim.h"
+#include "stm32f4xx_hal_tim_ex.h"
 #include "stm32f4xx_hal_eth.h"
 #include "stm32f4xx_hal_cortex.h"
 #include "stm32f4xx_hal_flash.h"
 #include "stm32f4xx_hal_flash_ex.h"
 #include "stm32f4xx_hal_pwr.h"
 #include "stm32f4xx_hal_pwr_ex.h"
-#include "stm32f4xx_hal_tim_ex.h"
 
 #include "app_config.h"
 
