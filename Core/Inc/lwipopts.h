@@ -35,6 +35,7 @@
 
 #define LWIP_ICMP                       1
 #define LWIP_RAW                        0
+#define PPP_SUPPORT                     0
 
 #define CHECKSUM_BY_HARDWARE            0
 

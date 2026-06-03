@@ -209,6 +209,7 @@ cp "${LWIP_CACHE}/src/include/lwip/"*.h             "${LWIP_DST}/include/lwip/" 
 cp "${LWIP_CACHE}/src/include/lwip/prot/"*.h        "${LWIP_DST}/include/lwip/prot/"  2>/dev/null || true
 cp "${LWIP_CACHE}/src/include/lwip/priv/"*.h        "${LWIP_DST}/include/lwip/priv/"  2>/dev/null || true
 cp "${LWIP_CACHE}/src/include/netif/"*.h            "${LWIP_DST}/include/netif/"      2>/dev/null || true
+cp -r "${LWIP_CACHE}/src/include/netif/ppp"          "${LWIP_DST}/include/netif/"      2>/dev/null || true
 cp "${LWIP_CACHE}/src/include/"*.h                  "${LWIP_DST}/include/"            2>/dev/null || true
 echo "  lwIP: OK"
 
