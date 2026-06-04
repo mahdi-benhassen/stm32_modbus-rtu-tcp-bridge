@@ -190,7 +190,11 @@ void bridge_engine_task(void *pvParameters)
 
         /* ============================================
          * STEP 3: Transmit on RS485
+         * Drain any stale semaphore from previous transaction first.
          * ============================================ */
+        while (xSemaphoreTake(rx_frame_semaphore, 0) == pdTRUE) {} /* drain stale */
+        rs485_signal_frame_received();
+        rs485_signal_response_timeout();
         rs485_flush_rx_buffer();
         rs485_transmit_dma(rtu_tx_buffer, rtu_tx_len);
 
@@ -310,7 +314,25 @@ void bridge_engine_task(void *pvParameters)
          * RTU RX: [Unit ID(1)] + [PDU(n)] + [CRC(2)]
          * Strip CRC and Unit ID; PDU starts at byte 1.
          * TCP TX: [MBAP Header(7)] + [PDU(n)]
+         *
+         * Verify the received Unit ID matches the request.
+         * A mismatch means a different slave responded or
+         * the frame is corrupt beyond CRC detection.
          * ============================================ */
+        if (rx_data[0] != unit_id) {
+            rs485_flush_rx_buffer();
+            resp.status         = BRIDGE_ERR_TIMEOUT;
+            resp.client_sock    = req.client_sock;
+            resp.frame_len      = build_exception_response(mbap_cache,
+                                   req.tcp_frame[7],
+                                   MODBUS_EXC_GATEWAY_TARGET_FAILED,
+                                   resp.tcp_frame);
+            xQueueSend(bridge_response_queue, &resp, pdMS_TO_TICKS(100));
+            HAL_GPIO_WritePin(DEBUG_LED_PORT, DEBUG_LED2_PIN, GPIO_PIN_RESET);
+            xSemaphoreGive(rs485_bus_mutex);
+            continue;
+        }
+
         uint16_t rtu_pdu_len = (uint16_t)(rx_len - 3); /* minus addr + CRC */
         uint8_t  *rtu_pdu    = &rx_data[1];
 

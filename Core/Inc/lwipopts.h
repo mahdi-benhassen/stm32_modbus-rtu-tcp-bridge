@@ -72,7 +72,7 @@
 #define DEFAULT_ACCEPTMBOX_SIZE         4
 
 #define LWIP_ETHERNET                   1
-#define ETH_PHY_ADDR                    0x00U
+#define ETH_PHY_ADDR                    0x01U
 #define LWIP_NETIF_HOSTNAME             1
 
 #endif /* __LWIPOPTS_H */

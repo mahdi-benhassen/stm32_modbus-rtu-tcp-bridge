@@ -42,6 +42,53 @@ extern SemaphoreHandle_t tx_done_semaphore;
  * ============================================================ */
 
 static void MX_GPIO_Init(void)
+
+/*
+ * HAL peripheral MspInit callbacks.  Called by the HAL peripheral init
+ * functions (HAL_UART_Init, HAL_TIM_Base_Init, HAL_DMA_Init) to configure
+ * the low-level hardware: pins, clocks, interrupts.
+ */
+void HAL_UART_MspInit(UART_HandleTypeDef *huart)
+{
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    if (huart->Instance == RS485_USART_INSTANCE) {
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+        __HAL_RCC_USART1_CLK_ENABLE();
+
+        /* PA9  = USART1_TX (AF7) */
+        GPIO_InitStruct.Pin       = RS485_USART_TX_PIN;
+        GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull      = GPIO_NOPULL;
+        GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH;
+        GPIO_InitStruct.Alternate = RS485_USART_AF;
+        HAL_GPIO_Init(RS485_USART_TX_PORT, &GPIO_InitStruct);
+
+        /* PA10 = USART1_RX (AF7) */
+        GPIO_InitStruct.Pin       = RS485_USART_RX_PIN;
+        HAL_GPIO_Init(RS485_USART_RX_PORT, &GPIO_InitStruct);
+    }
+}
+
+void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim)
+{
+    if (htim->Instance == SILENCE_TIMER_INSTANCE) {
+        __HAL_RCC_TIM2_CLK_ENABLE();
+    } else if (htim->Instance == TIMEOUT_TIMER_INSTANCE) {
+        __HAL_RCC_TIM3_CLK_ENABLE();
+    }
+}
+
+void HAL_DMA_MspInit(DMA_HandleTypeDef *hdma)
+{
+    if (hdma->Instance == DMA2_Stream7) {
+        __HAL_RCC_DMA2_CLK_ENABLE();
+    } else if (hdma->Instance == DMA2_Stream2) {
+        __HAL_RCC_DMA2_CLK_ENABLE();
+    }
+}
+
+static void MX_GPIO_Init(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
@@ -217,8 +264,9 @@ void rs485_set_transmit_mode(void)
 
 void rs485_set_receive_mode(void)
 {
-    /* Wait for USART TC flag to ensure last byte shifted out */
-    while (!__HAL_UART_GET_FLAG(&huart_rs485, UART_FLAG_TC)) {}
+    /* Wait for USART TC flag with 10ms timeout to prevent ISR deadlock */
+    uint32_t tc_timeout = 10000;
+    while (!__HAL_UART_GET_FLAG(&huart_rs485, UART_FLAG_TC) && --tc_timeout) {}
 
     HAL_GPIO_WritePin(RS485_DE_PORT, RS485_DE_PIN, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(DEBUG_LED_PORT, DEBUG_LED_PIN, GPIO_PIN_RESET);

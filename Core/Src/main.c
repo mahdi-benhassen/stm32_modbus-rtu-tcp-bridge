@@ -182,7 +182,7 @@ int main(void)
         if (HAL_GetTick() > link_timeout) {
             break; /* Proceed without link; DHCP/static will keep trying */
         }
-        vTaskDelay(pdMS_TO_TICKS(100));
+        HAL_Delay(100);   /* busy-wait: scheduler not started yet */
     }
 
     /* ---- Create Tasks ---- */

@@ -61,7 +61,7 @@ err_t ethernetif_init(struct netif *netif);
 #define ETH_MDC_PIN                 GPIO_PIN_1
 #define ETH_MDC_PORT                GPIOC
 
-#define ETH_PHY_ADDR                0x00U
+#define ETH_PHY_ADDR                0x01U
 
 /* ---- RS485 Interface ---- */
 #define RS485_USART_INSTANCE        USART1
