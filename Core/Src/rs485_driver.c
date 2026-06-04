@@ -41,8 +41,6 @@ extern SemaphoreHandle_t tx_done_semaphore;
  *  HAL Peripheral Initialization
  * ============================================================ */
 
-static void MX_GPIO_Init(void)
-
 /*
  * HAL peripheral MspInit callbacks.  Called by the HAL peripheral init
  * functions (HAL_UART_Init, HAL_TIM_Base_Init, HAL_DMA_Init) to configure
