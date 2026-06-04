@@ -34,6 +34,11 @@
 #define configTIMER_QUEUE_LENGTH                10
 #define configTIMER_TASK_STACK_DEPTH            256
 
+/* FreeRTOS optional API includes */
+#define INCLUDE_vTaskDelay                      1
+#define INCLUDE_vTaskSuspend                    1
+#define INCLUDE_xTaskGetCurrentTaskHandle        1
+
 /* Cortex-M4 with FPU: interrupt priority for FreeRTOS API */
 #define configLIBRARY_LOWEST_INTERRUPT_PRIORITY         15
 #define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY    5
