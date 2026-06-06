@@ -41,6 +41,23 @@ typedef struct {
     uint8_t         exception_code;       /* 0 if no exception */
 } bridge_response_t;
 
+/*
+ * Diagnostic counters — tracked by bridge engine, readable
+ * for monitoring (e.g., via Modbus register or debug CLI).
+ */
+typedef struct {
+    uint32_t requests;          /* total TCP requests processed */
+    uint32_t responses;         /* successful RTU responses     */
+    uint32_t timeouts;          /* slave response timeouts      */
+    uint32_t crc_errors;        /* CRC validation failures      */
+    uint32_t unit_id_mismatch;  /* RX unit ID != request ID     */
+    uint32_t protocol_errors;   /* non-zero MBAP protocol ID    */
+    uint32_t frame_too_short;   /* frames below minimum size    */
+    uint32_t uart_errors;       /* UART overrun/framing/noise   */
+} bridge_diag_t;
+
+extern bridge_diag_t g_bridge_diag;
+
 void bridge_engine_task(void *pvParameters);
 
 #endif /* __BRIDGE_ENGINE_H */

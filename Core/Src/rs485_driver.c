@@ -1,5 +1,6 @@
 #include "rs485_driver.h"
 #include "main.h"
+#include "bridge_engine.h"
 #include "stm32f4xx_hal.h"
 #include <string.h>
 
@@ -493,6 +494,8 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
     __HAL_UART_CLEAR_FEFLAG(huart);
     __HAL_UART_CLEAR_NEFLAG(huart);
     __HAL_UART_CLEAR_PEFLAG(huart);
+
+    g_bridge_diag.uart_errors++;
 
     rs485_flush_rx_buffer();
     rx_timeout_flag = true;

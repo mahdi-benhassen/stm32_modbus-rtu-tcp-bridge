@@ -24,11 +24,15 @@ extern QueueHandle_t bridge_request_queue;
 extern QueueHandle_t bridge_response_queue;
 
 static int client_sockets[MAX_TCP_CLIENTS];
+static uint32_t client_last_active[MAX_TCP_CLIENTS];  /* HAL_GetTick() timestamp */
+
+#define CLIENT_IDLE_TIMEOUT_MS  30000U   /* 30s idle -> close socket */
 
 static void client_sockets_init(void)
 {
     for (uint8_t i = 0; i < MAX_TCP_CLIENTS; i++) {
         client_sockets[i] = -1;
+        client_last_active[i] = 0;
     }
 }
 
@@ -124,6 +128,7 @@ void tcp_server_task(void *pvParameters)
                 int8_t slot = find_free_slot();
                 if (slot >= 0) {
                     client_sockets[(uint8_t)slot] = new_sock;
+                    client_last_active[(uint8_t)slot] = HAL_GetTick();
                 } else {
                     lwip_close(new_sock);
                 }
@@ -160,6 +165,8 @@ void tcp_server_task(void *pvParameters)
             req.frame_len   = (uint16_t)len;
             memcpy(req.tcp_frame, buf, (size_t)len);
 
+            client_last_active[i] = HAL_GetTick();
+
             if (xQueueSend(bridge_request_queue, &req, pdMS_TO_TICKS(100))
                 != pdTRUE) {
                 /* Queue full - drop frame; client will timeout on its end */
@@ -191,6 +198,18 @@ void tcp_server_task(void *pvParameters)
                         (size_t)resp.frame_len, 0);
             }
             /* BRIDGE_ERR_CONNECTION_LOST -> client already gone, nothing to do */
+        }
+
+        /* -------------------------------------------------------
+         * Idle client timeout: close sockets with no activity
+         * for CLIENT_IDLE_TIMEOUT_MS (30 seconds).
+         * ----------------------------------------------------- */
+        uint32_t now = HAL_GetTick();
+        for (uint8_t i = 0; i < MAX_TCP_CLIENTS; i++) {
+            if (client_sockets[i] < 0) continue;
+            if ((now - client_last_active[i]) >= CLIENT_IDLE_TIMEOUT_MS) {
+                close_client(i);
+            }
         }
 
         taskYIELD();

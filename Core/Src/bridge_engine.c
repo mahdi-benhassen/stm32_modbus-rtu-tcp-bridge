@@ -34,6 +34,9 @@ extern SemaphoreHandle_t rs485_bus_mutex;
 extern SemaphoreHandle_t rx_frame_semaphore;
 extern SemaphoreHandle_t tx_done_semaphore;
 
+/* ---- Diagnostic Counters (type in bridge_engine.h) ---- */
+bridge_diag_t g_bridge_diag;
+
 /*
  * Build a Modbus Exception response (TCP format).
  * Exception frame: MBAP + Function Code (with 0x80 bit set) + Exception Code.
@@ -106,6 +109,8 @@ void bridge_engine_task(void *pvParameters)
             continue;
         }
 
+        g_bridge_diag.requests++;
+
         /* Acquire RS485 bus mutex - serializes bus access */
         if (xSemaphoreTake(rs485_bus_mutex, pdMS_TO_TICKS(5000)) != pdTRUE) {
             continue;
@@ -122,6 +127,7 @@ void bridge_engine_task(void *pvParameters)
          *   [6]:   Unit ID (1-247 valid, 0 = broadcast)
          * ============================================ */
         if (req.frame_len < MODBUS_MBAP_HEADER_SIZE + 1) {
+            g_bridge_diag.frame_too_short++;
             resp.status         = BRIDGE_ERR_FRAME_TOO_SHORT;
             resp.client_sock    = req.client_sock;
             resp.frame_len      = 0;
@@ -137,6 +143,7 @@ void bridge_engine_task(void *pvParameters)
         uint16_t protocol_id = ((uint16_t)req.tcp_frame[2] << 8) |
                                 (uint16_t)req.tcp_frame[3];
         if (protocol_id != 0x0000) {
+            g_bridge_diag.protocol_errors++;
             resp.status         = BRIDGE_OK;
             resp.client_sock    = req.client_sock;
             resp.exception_code = 0;
@@ -243,6 +250,8 @@ void bridge_engine_task(void *pvParameters)
             rs485_signal_response_timeout();
             rs485_flush_rx_buffer();
 
+            g_bridge_diag.timeouts++;
+
             resp.status         = BRIDGE_ERR_TIMEOUT;
             resp.client_sock    = req.client_sock;
             resp.frame_len      = build_exception_response(mbap_cache,
@@ -292,6 +301,7 @@ void bridge_engine_task(void *pvParameters)
                                 (uint16_t)rx_data[rx_len - 2];
 
         if (rx_crc_calc != rx_crc_recv) {
+            g_bridge_diag.crc_errors++;
             /* CRC mismatch - corrupted frame, discard.
              * The bus is expected to remain silent after a corrupt frame.
              * Return Exception 0x0B to the TCP client. */
@@ -320,6 +330,7 @@ void bridge_engine_task(void *pvParameters)
          * the frame is corrupt beyond CRC detection.
          * ============================================ */
         if (rx_data[0] != unit_id) {
+            g_bridge_diag.unit_id_mismatch++;
             rs485_flush_rx_buffer();
             resp.status         = BRIDGE_ERR_TIMEOUT;
             resp.client_sock    = req.client_sock;
@@ -341,6 +352,8 @@ void bridge_engine_task(void *pvParameters)
         resp.exception_code = 0;
         resp.frame_len      = build_tcp_response(mbap_cache, rtu_pdu,
                                                   rtu_pdu_len, resp.tcp_frame);
+
+        g_bridge_diag.responses++;
 
         xQueueSend(bridge_response_queue, &resp, pdMS_TO_TICKS(100));
 
