@@ -32,6 +32,10 @@
 #define TCP_SND_BUF                     (4 * TCP_MSS)
 #define TCP_WND                         (4 * TCP_MSS)
 #define TCP_SND_QUEUELEN                (4 * TCP_SND_BUF / TCP_MSS)
+#define TCP_KEEPALIVE                   1
+#define TCP_KEEPIDLE                    60000U    /* 60s idle before keepalive probe */
+#define TCP_KEEPINTVL                   10000U    /* 10s between keepalive probes  */
+#define TCP_KEEPCNT                     3U        /* 3 failed probes -> disconnect */
 
 #define LWIP_ICMP                       1
 #define LWIP_RAW                        0

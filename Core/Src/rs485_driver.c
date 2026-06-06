@@ -479,3 +479,25 @@ void rs485_tim3_period_elapsed_isr(TIM_HandleTypeDef *htim)
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 }
+
+/*
+ * UART Error Callback — handles overrun, framing, noise, parity errors
+ * on the RS485 bus.  Clears the error, flushes RX, and signals timeout
+ * so the bridge engine returns exception 0x0B for the current transaction.
+ */
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance != RS485_USART_INSTANCE) return;
+
+    __HAL_UART_CLEAR_OREFLAG(huart);
+    __HAL_UART_CLEAR_FEFLAG(huart);
+    __HAL_UART_CLEAR_NEFLAG(huart);
+    __HAL_UART_CLEAR_PEFLAG(huart);
+
+    rs485_flush_rx_buffer();
+    rx_timeout_flag = true;
+
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    xSemaphoreGiveFromISR(rx_frame_semaphore, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+}
